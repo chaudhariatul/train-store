@@ -52,9 +52,7 @@ This document is intended to setup a linux host as a local development machine f
    ```bash
    python crepuscular_rays.py
    ```
-    <details>
-    <summary><b>A successful execution should look as shown below.</b> (Click to expand)</summary>
-
+    > 
     > You're in luck! San Jose experiences beautiful sunsets with a good chance to catch some impressive crepuscular rays. Here's when and where:  
     >   
     > **Timing:**   
@@ -78,8 +76,7 @@ This document is intended to setup a linux host as a local development machine f
     >   
     >   
     > Remember, these phenomena are a bit unpredictable. Be patient, keep an eye on the sky, and enjoy the wonder! Let me know if you have any other questions about San Jose or California!  
-    </details>
-
+    >  
 4. Check processes running on the GPU and GPU memory usage with `nvidia-smi` command.
    ```
    +-----------------------------------------------------------------------------------------+
