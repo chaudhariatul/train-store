@@ -82,6 +82,7 @@ This document is intended to setup a linux host as a local development machine f
 
 4. Check processes running on the GPU and GPU memory usage with `nvidia-smi` command.
    ```
+   +-----------------------------------------------------------------------------------------+
    | NVIDIA-SMI 550.54.15              Driver Version: 550.54.15      CUDA Version: 12.4     |
    |-----------------------------------------+------------------------+----------------------+
    | GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
