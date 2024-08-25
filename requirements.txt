@@ -1,0 +1,10 @@
+pandas
+requests
+pypdf
+streamlit
+langchain
+cryptography
+ollama
+llama-index-llms-ollama
+psycopg2-binary
+SQLAlchemy
