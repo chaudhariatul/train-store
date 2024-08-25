@@ -1,0 +1,41 @@
+[
+    {
+        "Name":"Digital Commander DCC Equipped Ready To Run Electric Train Set - HO Scale",
+        "Price": 299.99,
+        "PartNumber": "BGOP07923",
+        "Manufacturer": "DCC",
+        "Type":"Electric Train",
+        "LocomotiveType": ["EMD GP40 Locomotive", "EMD FT-A Locomotive"],
+        "ProductDetails": "Digital Commander DCC Equipped Ready To Run Electric Train Set - HO Scale. The Digital Commander has everything you need to get started in digital model railroading in one ready-to-run set! It includes our exclusive, easy-to-use E-Z Command digital system that lets you independently control the speed, direction, and lighting of two decoder-equipped locomotives. Take control of your own freight rail empire with the Digital Commander! This digitally controlled train set features: DCC-equipped EMD GP40 locomotive with operating headlight, DCC-equipped EMD FT-A locomotive with operating headlight, plug-door box car, open quad hopper, wide-vision caboose, E-Z Command Control Center with wall pack and plug-in wiring, body-mounted E-Z Mate couplers, 56 x 38 oval of nickel silver E-Z Track, including 12 pieces curved track, 4 pieces straight track, 1 terminal rerailer, 1 manual turnout - left, under-track magnet with brakeman figure, and 1 Hayes bumper, illustrated instruction manual.",
+        "Scale": "HO Scale 1:87",
+        "Weight":"8.55 pounds",
+        "AccessoriesIncluded":["2 DCC Equipped Locomotives", "E-Z Command Digital Control System","Plug Door Box Car", "Open Quad Hopper Car", "Wide-Vision Caboose", "56 x 38 Oval of Nickel Silver E-Z Track with Turnout and Siding"],
+        "ProductReviews": []
+    },
+    {
+        "Name":"Construction Toy Train Set for Kids 4+",
+        "Price": 114.99,
+        "PartNumber": "CTY836901",
+        "Manufacturer": "Lionel",
+        "Type":"Electric Train",
+        "LocomotiveType": ["Battery-powered locomotive controlled by a wireless remote control"],
+        "ProductDetails": "These large-scale trains operate in both forward & reverse directions and are power-driven by an easy to operate RC controller. Includes an exclusive 50 x 73-inch track system that allows you to create (3) different track layouts. Battery-powered locomotive controlled by a wireless remote control, operating headlight, removable reel load on flatcar, removable container load in gondola car, fixed knuckle couplers, authentic train sounds including construction announcements and horn. Crane manually moves up and down, rotates 360 degrees, features a flashing light on top, and is equipped with a chain and hook. Train Set requires (6) C Cell Batteries, (3) AAA Alkaline Batteries, and (2) AA Alkaline Batteries for operation (not included). Phillip screwdriver required to access battery compartment on remote control (not included). Wipe with a soft cloth after use to keep track and wheels free from dirt. Remove all batteries when the train will not be used for an extended period of time. Recommended for ages 4 years and up. Adult assembly is required.",
+        "Scale": "HO Scale 1:87",
+        "Weight":"2 pounds",
+        "AccessoriesIncluded":["(1) Battery Powered Diesel Locomotive","(1) Gondola Car","(3) Removable Containers","(1) Flat Car", "(2) Removable Reels","(1) Crane Car", "(24) Curved Plastic Track Pieces","(8) Straight Plastic Track Pieces", "(1) Remote Control"],
+        "ProductReviews": []
+    },
+    {
+        "Name":"Hot Bee Train Set - Train set",
+        "Price": 99.99,
+        "PartNumber": "HBT982304",
+        "Manufacturer": "Hot Bee",
+        "Type":"Electric Train",
+        "LocomotiveType": ["Multifunctional Locomotive","Alloy material steam locomotive", "USB Rechargeable Metal Train Set"],
+        "ProductDetails": "Luminous Carriages and Multifunctional Locomotive ：Our Christmas train restores all details of a real train; The exquisite train locomotive can make whistle sounds and lights, and the toy train comes with an empty water bottle, and adding water to the tank can also make it produce smoke; In addition, the 2 passenger carriages also have a light function; Turn on the bottom switch, warm light will fill the entire carriage; This makes the model train toy more realistic when driving at night Alloy Material, Safe and Durable ：Both the locomotive steam and carriage wheels are made of alloy materials and other parts are made of ABS plastic, which are non-toxic and tasteless, and every component has undergone strict quality control, it is safe enough for kids; Compared to the all-plastic trains on Amazon, our train is partially made of alloy, making them more durable and impact-resistant; The smooth design of the train feels good to the touch and will not harm the child's hands or body Richer Track Types For More Fun ：The Christmas train set only needs to assemble the railway into various shapes (circular, oval and luxury layouts), and each electric train track is locked firmly, then turn on the switch, the Christmas tree train set will move steadily on the toy track; DIY train sets for boys 4-7 can improve children's hands-on and thinking skills; If parents accompany their kids to assemble this electric train together, it can also strengthen the parent-child relationship Perfect Christmas Toys Gifts For Kids ：The perfect train set for Christmas tree with Xmas elements puzzle, suit for decoration under the Christmas tree, and let children and family spend a wonderful Christmas time together; For every child, the toy train set is a fun and educational holiday, birthday and Christmas gift; The toy trains model are suitable for boys and girls over 3, 4, 5, 6, 7, 8 years old; Let your child get double the happiness from you",
+        "Scale": "Small",
+        "Weight":"1.5 pounds",
+        "AccessoriesIncluded":["full alloy steam trains","1 coal carriage", "2 passenger carriages", "lights", "8 curved tracks","8 straight tracks","4 Y-shape tracks","1 cross track", "60 track locks", "1000mAh (3.7V) rechargeable lithium battery", "USB charging cable", "lighting carriages"],
+        "ProductReviews": []
+    }
+]

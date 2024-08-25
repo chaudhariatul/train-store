@@ -1,10 +1,10 @@
 pandas
-polars
 requests
 pypdf
 streamlit
 langchain
-pygwalker
 cryptography
 ollama
 llama-index-llms-ollama
+psycopg2-binary
+SQLAlchemy
