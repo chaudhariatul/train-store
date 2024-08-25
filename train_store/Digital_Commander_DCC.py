@@ -16,8 +16,6 @@ import os
 import psycopg2 as pg
 
 import streamlit as st
-from streamlit_elements import elements, mui, html
-import streamlit.components.v1 as components
 
 import requests
 from PIL import Image
@@ -104,7 +102,7 @@ def ask_question(llm, question, interesting_phenomenon):
     for r in stream_response:
         yield r.delta + " "
 
-def context_engine(em,  db, ollama_host='localhost', llm_model='gemma2:2b'):
+def context_engine(em,  db, ollama_host='ollama_container', llm_model='gemma2:2b'):
     embed_model_name = em['embed_model_name']
     embed_dimension = em['embed_dimension']
     # table_name = re.sub("[-.:#@\\/\\\]","_",embed_model_name)
@@ -210,10 +208,10 @@ with st.sidebar.container(border=True):
         text_generation_with_gemma.clear()
 
 def main():
-    ollama_address = 'localhost'
+    ollama_address = 'ollama_container'
     slm = 'gemma2:2b'
     text_llm = Ollama(model=slm, request_timeout=300.0, base_url=f"http://{ollama_address}:11434", additional_kwargs={"low_vram": True})
-    storage_context, query_engine = context_engine(embed_models[0], db, ollama_host='localhost', llm_model='gemma2:2b')
+    storage_context, query_engine = context_engine(embed_models[0], db, ollama_host=ollama_address, llm_model=slm)
     with open('./products.json', 'r') as pf:
         products = json.load(pf)
     product = products[0]
