@@ -1,12 +1,10 @@
 
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.core import SimpleDirectoryReader, StorageContext, ServiceContext, VectorStoreIndex, Settings, Document
+from llama_index.core import StorageContext, VectorStoreIndex, Settings, Document
 from llama_index.core.vector_stores import VectorStoreQuery
 from llama_index.vector_stores.postgres import PGVectorStore
 from llama_index.llms.ollama import Ollama
 from llama_index.core.llms import ChatMessage
-
-
 from sentence_transformers import SentenceTransformer
 
 import pandas as pd
@@ -25,7 +23,7 @@ import warnings
 
 
 import json
-import datetime
+from datetime import datetime
 import time
 import re
 
