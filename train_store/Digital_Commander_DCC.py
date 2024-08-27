@@ -2,6 +2,7 @@
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import StorageContext, VectorStoreIndex, Settings, Document
 from llama_index.core.vector_stores import VectorStoreQuery
+from llama_index.core.schema import TextNode
 from llama_index.vector_stores.postgres import PGVectorStore
 from llama_index.llms.ollama import Ollama
 from llama_index.core.llms import ChatMessage
@@ -46,50 +47,6 @@ class pgDb:
         # Create a cursor object
         cursor = conn.cursor()
         return (conn, cursor)
-
-    def create_table_cursor(db_cursor, table_name, condition_column, condition_list, date_column, start_datetime=0, end_datetime=0):
-        try:
-            db_cursor.execute(f"""
-                BEGIN;
-                DECLARE {table_name.replace(".","_")}_cursor scroll CURSOR 
-                FOR SELECT * FROM {table_name} 
-                where {date_column} BETWEEN '{start_datetime}' AND '{end_datetime}'
-                AND {condition_column} IN {tuple(condition_list)}
-                ORDER by {date_column} asc;
-            """)
-            return f"{table_name.replace('.', '_')}_cursor"
-        except Exception as e:
-            return traceback.format_exc()
-
-    def close_table_cursor(table_name, db_cursor):
-        print(f"""{table_name.replace(".", "_")}_cursor closed""")
-        try:
-            db_cursor.execute(f"""
-                close {table_name.replace(".", "_")}_cursor;
-            """)
-        except Exception as e:
-            return traceback.format_exc()
-
-    def commit_cursor(db_cursor):
-        try:
-            db_cursor.execute(f"""
-                commit;
-            """)
-        except Exception as e:
-            return traceback.format_exc()
-
-    def get_data(db_cursor, table_cursor, direction):
-        limit = 1000
-        try:
-            db_cursor.execute(f"""
-                FETCH {direction} {limit} FROM {table_cursor};
-            """)
-            all_rows = db_cursor.fetchall()
-            if len(all_rows) > 0:
-                yield all_rows
-        except Exception as e:
-            return traceback.format_exc()
-
 
 def ask_question(llm, question, interesting_phenomenon):
     messages = [
@@ -149,19 +106,21 @@ def context_engine(em,  db, ollama_host='ollama_container', llm_model='gemma2:2b
     )
     query_engine = index.as_query_engine()
 
-    return storage_context, query_engine
+    return storage_context, query_engine, vector_store
 
-
-def review_embeddings(review, storage_context):
-    ## Storing embeddings in Postgres database
-    text_list = [review]
-    documents = [Document(text=t) for t in text_list]
-    index = VectorStoreIndex.from_documents(
-        documents, 
-        storage_context=storage_context, 
-        show_progress=False,
-    )
-    return index
+def review_embeddings(review, review_date, product, product_id, vector_store):
+    review_node = [
+                    TextNode(text=review,
+                        metadata={
+                            "review_date": review_date,
+                            "product": product,
+                            "product_id": product_id,
+                        },
+                    )
+                ]
+    vector_index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
+    vector_index.insert_nodes(review_node)
+    return review_node
 
 embed_models = [{"embed_model_name": 'Alibaba-NLP/gte-large-en-v1.5', "embed_dimension": 1024}]
 
@@ -188,13 +147,16 @@ def text_generation_with_gemma(_llm, about):
     return interesting_info
 
 @st.dialog(f"Write a review :")
-def write_review(product, storage_context):
-    review = st.text_area(product)
+def write_review(product_name, product_id, vector_store):
+    review = st.text_area(product_name)
     if st.button("Submit Review"):
-        st.session_state.review = {"product": product, "review": review}
+        st.session_state.review = {"product": product_name, "review": review}
         review_embeddings(
-            review=review,
-            storage_context=storage_context
+            review, 
+            datetime.strftime(datetime.today(), "%Y-%m-%d"), 
+            product_name, 
+            product_id, 
+            vector_store
         )
         st.rerun()
 
@@ -209,7 +171,7 @@ def main():
     ollama_address = 'ollama_container'
     slm = 'gemma2:2b'
     text_llm = Ollama(model=slm, request_timeout=300.0, base_url=f"http://{ollama_address}:11434", additional_kwargs={"low_vram": True})
-    storage_context, query_engine = context_engine(embed_models[0], db, ollama_host=ollama_address, llm_model=slm)
+    storage_context, query_engine, vector_store = context_engine(embed_models[0], db, ollama_host=ollama_address, llm_model=slm)
     with open('./products.json', 'r') as pf:
         products = json.load(pf)
     product = products[0]
@@ -250,7 +212,7 @@ def main():
             st.html("<h4><b>Customer reviews</b></h4>")
             if "review" not in st.session_state:
                 if st.button("Write a review"):
-                    write_review(product['Name'], storage_context)
+                    write_review(product['Name'], product['ProductId'], vector_store)
             else:
                 f"Thank you for your review!"
                 # st.write(st.session_state.review)
@@ -308,7 +270,7 @@ def main():
                 activity_description = text_generation_with_gemma(text_llm, prompt1)
                 st.info(f'Things to consider when shopping for Toy train set.', icon="ℹ️")
                 st.success(f'Text generated with {slm} and cached with @st.cache_data decorator. Click the button to generate new text.')
-                if st.button("Tell me more about toy trains!"):
+                if st.button("Tell me more!", key="AboutTrain", help="This button triggers a new text to be generated by the Language Model used in this application.", type="primary"):
                     text_generation_with_gemma.clear(text_llm, prompt1)
                 st.write(activity_description)
 
@@ -325,8 +287,8 @@ def main():
                     Limit your reponse to 300 words.
                 """
                 activity_description = text_generation_with_gemma(text_llm, prompt2)
-                st.info('This is a purely informational message', icon="ℹ️")
-                if st.button("Tell me more about assembling toy trains!"):
+                st.info('Read more about assembling toy trains!', icon="ℹ️")
+                if st.button("Tell me more!", key="AssembledTrain", help="This button triggers a new text to be generated by the Language Model used in this application.", type="primary"):
                     text_generation_with_gemma.clear(text_llm, prompt2)
                 st.write(activity_description)
 
@@ -345,22 +307,9 @@ def main():
                 """
                 activity_description = text_generation_with_gemma(text_llm, prompt3)
                 st.info('More details about parts and accessories included in this train set.', icon="ℹ️")
-                if st.button("Tell me more about toy train parts and accessories!"):
+                if st.button("Tell me more!", key="TrainAccessories", help="This button triggers a new text to be generated by the Language Model used in this application.", type="primary"):
                     text_generation_with_gemma.clear(text_llm, prompt3)
                 st.write(activity_description)
-
-        with placeholder_tab4.container(border=True):
-            w4, h4 = Image.open("./images/product0/image4.png").size
-            image4 = Image.open("./images/product0/image4.png").resize((int(w4*300/h4), 300))
-            st.image(image4, use_column_width=True)
-            with st.spinner(f"Toy train parts"):
-                prompt4=f"What to toy train enthusiasts think about toy train set packaging when buying the set. Limit your reponse to 300 words."
-                activity_description = text_generation_with_gemma(text_llm, prompt4)
-                st.info(f'Text generated with {slm} and is a purely informational message.', icon="ℹ️")
-                if st.button("What to look in a package?"):
-                    text_generation_with_gemma.clear(text_llm, prompt4)
-                st.write(activity_description)
-
 
 if __name__ == "__main__":
     main()

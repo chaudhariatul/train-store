@@ -1,5 +1,6 @@
 [
     {
+        "ProductId": 1,
         "Name":"Digital Commander DCC Equipped Ready To Run Electric Train Set - HO Scale",
         "Price": 299.99,
         "PartNumber": "BGOP07923",
@@ -13,6 +14,7 @@
         "ProductReviews": []
     },
     {
+        "ProductId": 2,
         "Name":"Construction Toy Train Set for Kids 4+",
         "Price": 114.99,
         "PartNumber": "CTY836901",
@@ -26,6 +28,7 @@
         "ProductReviews": []
     },
     {
+        "ProductId": 3,
         "Name":"Hot Bee Train Set - Train set",
         "Price": 99.99,
         "PartNumber": "HBT982304",
