@@ -14,6 +14,7 @@ import textwrap
 import os
 
 import psycopg2 as pg
+
 import streamlit as st
 
 import requests
@@ -31,13 +32,6 @@ import random
 
 
 warnings.filterwarnings("ignore", category=FutureWarning)
-import json
-from datetime import datetime
-import random
-import queue
-from flask import Flask, request
-import requests as r
-app = Flask(__name__)
 
 
 def random_date(start_date, end_date):
@@ -48,20 +42,11 @@ def random_date(start_date, end_date):
     return random_date
 
 
-def qna_context_engine(product, em,  db, ollama_host='ollama_container', llm_model='gemma2:2b'):
+def context_engine(em,  db, ollama_host='ollama_container', llm_model='gemma2:2b'):
     embed_model_name = em['embed_model_name']
     embed_dimension = em['embed_dimension']
     table_name = 'review_embeddings'
-    start_date = datetime.strftime(datetime.today()-timedelta(365), "%Y-%m-%d")
-    end_date = datetime.strftime(datetime.today(), "%Y-%m-%d")
-    filters = MetadataFilters(
-        filters=[
-            ExactMatchFilter(key="product", value=product['product_name']),
-            # MetadataFilter(key="review_date", value=start_date, operator=">="),
-            # MetadataFilter(key="review_date", value=end_date, operator="<="),
-        ],
-        condition="and",
-    )
+    
     try:
         embed_model = HuggingFaceEmbedding(
             model_name=f"./models/{embed_model_name}", 
@@ -93,8 +78,8 @@ def qna_context_engine(product, em,  db, ollama_host='ollama_container', llm_mod
         embed_dim=embed_dimension,
         hnsw_kwargs={
             "hnsw_m": 16,
-            "hnsw_ef_construction": 64,
-            "hnsw_ef_search": 40,
+            "hnsw_ef_construction": 100,
+            "hnsw_ef_search": 100,
             "hnsw_dist_method": "vector_cosine_ops",
         },
     )
@@ -103,13 +88,20 @@ def qna_context_engine(product, em,  db, ollama_host='ollama_container', llm_mod
         vector_store=vector_store, 
         storage_context=storage_context,
     )
-    query_engine = vector_index.as_query_engine(
-        filters=filters
-    )
+    query_engine = vector_index.as_query_engine()
 
     return storage_context, query_engine, vector_index, vector_store
 
 
+def review_embeddings(review, storage_context):
+    ## Storing embeddings in Postgres database
+    documents = [Document(text=review)]
+    vector_index = VectorStoreIndex.from_documents(
+        documents, 
+        storage_context=storage_context, 
+        show_progress=False,
+    )
+    return vector_index
 
 embed_models = [{"embed_model_name": 'Alibaba-NLP/gte-large-en-v1.5', "embed_dimension": 1024}]
 
@@ -120,56 +112,31 @@ db = {
     'db_user':      'postgres', 
     'db_password':  'P0stGr3sP@ss', 
 }
-product = {"product_id": 1, "product_name": "Digital Commander DCC Equipped Ready To Run Electric Train Set - HO Scale"}
-storage_context, query_engine, vector_index, vector_store = qna_context_engine(product, embed_models[0], db, ollama_host='localhost', llm_model='gemma2:2b')
+
+storage_context, query_engine, vector_index, vector_store = context_engine(embed_models[0], db, ollama_host='localhost', llm_model='gemma2:2b')
+
+def review_embeddings(review, review_date,  product, product_id, vector_store):
+    review_node = [
+                    TextNode(text=review,
+                        metadata={
+                            "review_date": datetime.strftime(review_date, "%Y-%m-%d"),
+                            "product": product,
+                            "product_id": product_id,
+                        },
+                    )
+                ]
+    vector_index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
+    vector_index.insert_nodes(review_node)
+    return review_node
 
 
-def generate_response():
-    prompt = f"""
-    You are an expert sentiment analyst and a toy train enthusiast who wants to help new customers.
-    You are responsible to analyze the reviews written for the product {product['product_name']}.
-    Ensure the response is relevant and appropriate and find the answer to : {q} to help the new customer.
-    Limit the response to 10 words.
-    """
-    q_response = query_engine.query(q)
-    pass
+with open("./reviews.json", 'r') as rf:
+    product_reviews_json = json.load(rf)
 
-@app.route("/api/qna")
-def qna():
-    session_id = request.args.get("session_id")
-    question_id = request.args.get("question_id")
-    question = request.args.get("question")
-    prompt = request.args.get("prompt")
-    llm_model = request.args.get("llm_model")
-    embed_model = request.args.get("embed_model")
+start_date = date(2022, 1, 1)
+end_date = date(2024, 5, 31)
 
-    if not session_id:
-        session_id = random.randint(1,10)
-    if not question_id:
-        question_id = random.randint(1,10)
-    if not question:
-        question = "What is the best number?"
-    if not prompt:
-        prompt = f"You are awesome. Find the answer to {question}"
-    if not llm_model:
-        llm_model = "gemma2:2b"
-    if not embed_model:
-        embed_model = "Alibaba-NLP/en"
-
-    answer = generate_response(question)
-    data = {
-        "question": question,
-        "answer": answer,
-        "session_id": session_id,
-    }
-    return json.dumps(data)
-
-@app.route("/api/active_sessions")
-def active_sessions():
-    return json.dumps({"active_sessions": random.randint(1,10)})
-
-
-@app.route("/api/queue_length")
-def queue_length():
-    session_count = r.get('http://localhost:5000/api/active_sessions').json()['active_sessions']
-    return json.dumps({"active_sessions":session_count, "queue_length": session_count*random.randint(1,10)})
+for product in product_reviews_json:
+    for review in product['product_reviews']:
+        random_date_result = random_date(start_date, end_date)
+        review_embeddings(review, random_date_result, product['product_name'], product['product_id'], vector_store)        
