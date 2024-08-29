@@ -25,7 +25,7 @@ services:
     container_name: ollama_container
     restart: always
     mem_limit: 8g
-    cpus: 6 
+    cpus: 4
     environment:
       - OLLAMA_NUM_PARALLEL=4
       - OLLAMA_FLASH_ATTENTION=1
