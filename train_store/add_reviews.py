@@ -106,7 +106,7 @@ def review_embeddings(review, storage_context):
 embed_models = [{"embed_model_name": 'Alibaba-NLP/gte-large-en-v1.5', "embed_dimension": 1024}]
 
 db = {
-    'db_host':      'localhost', 
+    'db_host':      'postgres', 
     'db_port':      '5432', 
     'db_name':      'postgres', 
     'db_user':      'postgres', 
