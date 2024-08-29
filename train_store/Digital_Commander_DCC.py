@@ -66,7 +66,7 @@ def context_engine(em,  db, ollama_host='ollama_container', llm_model='gemma2:2b
     embed_model_name = em['embed_model_name']
     embed_dimension = em['embed_dimension']
     # table_name = re.sub("[-.:#@\\/\\\]","_",embed_model_name)
-    table_name = 'train1_review_embeddings'
+    table_name = 'review_embeddings'
     start_date = datetime.strftime(datetime.today()-timedelta(365), "%Y-%m-%d")
     end_date = datetime.strftime(datetime.today(), "%Y-%m-%d")
     filters = MetadataFilters(
