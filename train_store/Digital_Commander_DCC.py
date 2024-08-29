@@ -166,6 +166,22 @@ def text_generation_with_gemma(_llm, about):
     interesting_info = json.loads(interesting_info_response.json())['text']
     return interesting_info
 
+@st.cache_data(persist="disk")
+def create_review_summary(_vector_index):
+    response_synthesizer = get_response_synthesizer(response_mode="tree_summarize")
+    retriever = _vector_index.as_retriever()
+    summary_engine = RetrieverQueryEngine(
+        retriever=retriever,
+        response_synthesizer=response_synthesizer,
+    )
+    response = summary_engine.query("""
+                        Summarize the reviews with 5 point rating for Ease of assembly, Value for money, Good starter set, Functionality, Accessories included.
+                        Generate response in this format: 
+                            Ease of assembly : (rating/5) | Value for money : (rating/5) | Starter set : (rating/5) | Functionality : (rating/5) | Accessories included : (rating/5)
+                    """)
+    return response.response
+
+
 @st.dialog(f"Write a review :")
 def write_review(product_name, product_id, vector_store):
     review = st.text_area(product_name)
@@ -233,7 +249,6 @@ def main():
                 Ensure the response is relevant and appropriate and find the answer to : {prompt} to help the new customer.
                 """
                 q_response = query_engine.query(q)
-                # print(textwrap.fill(str(q_response), 100))
                 messages.chat_message("user").write(prompt)
                 messages.chat_message("assistant").write(str(q_response))
         with st.container(border=True):
@@ -245,18 +260,8 @@ def main():
                 f"Thank you for your review!"
                 st.session_state.review = {}
             st.html("<h5>Customer ratings</h5>")
-            response_synthesizer = get_response_synthesizer(response_mode="tree_summarize")
-            retriever = vector_index.as_retriever()
-            summary_engine = RetrieverQueryEngine(
-                retriever=retriever,
-                response_synthesizer=response_synthesizer,
-            )
-            response = summary_engine.query("""
-                                Summarize the reviews with 5 point rating for Ease of assembly, Value for money, Good starter set, Functionality, Accessories included.
-                                Generate response in this format: 
-                                    Ease of assembly : (rating/5) | Value for money : (rating/5) | Starter set : (rating/5) | Functionality : (rating/5) | Accessories included : (rating/5)
-                            """)
-            st.write(response.response)
+            reviews_summary = create_review_summary(vector_index)
+            st.write(reviews_summary)
             
     with col01:
         tab1, tab2, tab3, tab4 = st.tabs(["Train", "Assembled", "Parts", "Box"])
