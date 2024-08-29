@@ -46,14 +46,5 @@ This document is intended to setup a linux host as a local development machine f
 ---
 
 ```bash
-git clone https://github.com/chaudhariatul/train-store
-cd train-store
-docker-compose up -d
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --no-cache-dir -U torch==2.4.0 --index-url https://download.pytorch.org/whl/cpu
-pip install -r pip3 -q install --no-cache-dir -r train_store/requirements.txt
-cd train_store
-python add_reviews.py
-docker-compose down && docker-compose up -d
+curl -sSl https://raw.githubusercontent.com/chaudhariatul/train-store/main/setup_train_store_demo.sh | sh
 ```
