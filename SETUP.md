@@ -1,6 +1,6 @@
 # Steps to setup up Local dev environment
 
-This document is intended to setup a linux host as a local development machine for the **tech16-llm4biz-summer24** final project.
+> [!Note] This was our submission for Stanford University **tech16-llm4biz-summer24** *Large Language Models for business with python* final project.
 
 ## Recommended hardware
 ||**Device**|**Recommended Config**|
@@ -46,5 +46,5 @@ This document is intended to setup a linux host as a local development machine f
 ---
 
 ```bash
-curl -sSl https://raw.githubusercontent.com/chaudhariatul/train-store/main/setup_train_store_demo.sh | sh
+curl -sSl https://raw.githubusercontent.com/chaudhariatul/train-store/main/setup_train_store_demo.sh | bash
 ```
