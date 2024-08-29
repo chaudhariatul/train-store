@@ -11,5 +11,5 @@ while ! curl --silent --head --fail http://localhost:8080 >/dev/null 2>&1; do
   echo -n "."
   sleep 2
 done
-
-docker exec -it train_store bash -c "cd /usr/train_store/ && python add_reviews.py"
+hostip=`hostname -I | awk '{print $1}'`
+echo "Train store website now available on http://localhost:8080 or http://$hostip:8080"

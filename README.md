@@ -27,11 +27,17 @@ Online Train store with AI shopping assistant
    cd train-store
    docker-compose up -d
    ```
+   or run this command
+   ```
+   curl -sSl https://raw.githubusercontent.com/chaudhariatul/train-store/main/setup_train_store_demo.sh | bash
+   ```
+   <img src="./images/setup.png" width=900>
 3. Adjust the `cpus: 8` and reduce to 6 or 4 if you are running on a host with less resources. Downloading all the docker container images, setting up database and the Language Models could take more than 15mins to complete. Open `http://<machine-ip>:8080` in a browser to verify all the containers have started successfully.
 4. Add sample reviews for this demo once the website on port 8080 is ready.
    ```
    docker exec -it train_store bash -c "cd /usr/train_store/ && python add_reviews.py"
    ```
+   <img src="./images/add_reviews.png" width=900>
 5. Create new reviews, ask questions and if you run into issue create a github issue!
 
 > [!NOTE]
@@ -43,6 +49,7 @@ When running on a Raspberry Pi 5 with 8GB RAM with docker installed you can run 
 
 ```bash
 curl -sSl https://raw.githubusercontent.com/chaudhariatul/train-store/main/setup_train_store_demo.sh | bash
+docker exec -it train_store bash -c "cd /usr/train_store/ && python add_reviews.py"
 ```
 
 ---
