@@ -44,14 +44,14 @@ services:
       timeout: 30s
       retries: 5
       start_period: 10s
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         # Below setting allow Ollama to use Nvidia GPUs to run the models.
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities: [gpu]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            # Below setting allow Ollama to use Nvidia GPUs to run the models.
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
   train_store:
     depends_on:
       database:

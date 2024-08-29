@@ -1,12 +1,16 @@
 
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.core import StorageContext, VectorStoreIndex, Settings, Document
+from llama_index.core import StorageContext, VectorStoreIndex, Settings, get_response_synthesizer, Document
+from llama_index.core.vector_stores.types import MetadataFilter, MetadataFilters, ExactMatchFilter
 from llama_index.core.vector_stores import VectorStoreQuery
 from llama_index.core.schema import TextNode
+from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.vector_stores.postgres import PGVectorStore
 from llama_index.llms.ollama import Ollama
 from llama_index.core.llms import ChatMessage
 from sentence_transformers import SentenceTransformer
+
+
 
 import pandas as pd
 import textwrap
@@ -24,7 +28,7 @@ import warnings
 
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import re
 
@@ -58,15 +62,26 @@ def ask_question(llm, question, interesting_phenomenon):
         yield r.delta + " "
 
 def context_engine(em,  db, ollama_host='ollama_container', llm_model='gemma2:2b'):
+    product = {"product_id": 1, "product_name": "Digital Commander DCC Equipped Ready To Run Electric Train Set - HO Scale"}
     embed_model_name = em['embed_model_name']
     embed_dimension = em['embed_dimension']
     # table_name = re.sub("[-.:#@\\/\\\]","_",embed_model_name)
     table_name = 'train1_review_embeddings'
-    
+    start_date = datetime.strftime(datetime.today()-timedelta(365), "%Y-%m-%d")
+    end_date = datetime.strftime(datetime.today(), "%Y-%m-%d")
+    filters = MetadataFilters(
+        filters=[
+            ExactMatchFilter(key="product", value=product['product_name']),
+            # MetadataFilter(key="review_date", value=start_date, operator=">="),
+            # MetadataFilter(key="review_date", value=end_date, operator="<="),
+        ],
+        condition="and",
+    )    
     try:
         embed_model = HuggingFaceEmbedding(
             model_name=f"./models/{embed_model_name}", 
             trust_remote_code=True,
+            revision='104333d'
         )
         print(f"\n  Using {llm_model} language model with {embed_model_name} embedding model.\n")
         print("-"*100)
@@ -74,11 +89,13 @@ def context_engine(em,  db, ollama_host='ollama_container', llm_model='gemma2:2b
         download_model = SentenceTransformer(
             embed_model_name, 
             trust_remote_code=True,
+            revision='104333d'
         )
         download_model.save(f'models/{embed_model_name}')
         embed_model = HuggingFaceEmbedding(
             model_name=f"./models/{embed_model_name}", 
             trust_remote_code=True,
+            revision='104333d'
         )
 
     llm = Ollama(model=llm_model, request_timeout=900.0, base_url=f"http://{ollama_host}:11434")
@@ -100,13 +117,16 @@ def context_engine(em,  db, ollama_host='ollama_container', llm_model='gemma2:2b
         },
     )
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
-    index = VectorStoreIndex.from_vector_store(
+
+    vector_index = VectorStoreIndex.from_vector_store(
         vector_store=vector_store, 
         storage_context=storage_context,
     )
-    query_engine = index.as_query_engine()
+    query_engine = vector_index.as_query_engine(
+        filters=filters
+    )
 
-    return storage_context, query_engine, vector_store
+    return storage_context, query_engine, vector_index, vector_store
 
 def review_embeddings(review, review_date, product, product_id, vector_store):
     review_node = [
@@ -171,7 +191,7 @@ def main():
     ollama_address = 'ollama_container'
     slm = 'gemma2:2b'
     text_llm = Ollama(model=slm, request_timeout=300.0, base_url=f"http://{ollama_address}:11434", additional_kwargs={"low_vram": True})
-    storage_context, query_engine, vector_store = context_engine(embed_models[0], db, ollama_host=ollama_address, llm_model=slm)
+    storage_context, query_engine, vector_index, vector_store  = context_engine(embed_models[0], db, ollama_host=ollama_address, llm_model=slm)
     with open('./products.json', 'r') as pf:
         products = json.load(pf)
     product = products[0]
@@ -197,26 +217,47 @@ def main():
             }
             st.dataframe(product_table, use_container_width=True)
             st.markdown("---")
+            st.subheader('Product Description')
             st.write(product['ProductDetails'])
-
-
+            st.markdown("---")
+            
     with col03:
         with st.container(height=50, border=False):
             st.empty()
-        with st.container(height=300, border=True):
-            messages = st.container(height=200)
+        with st.container(height=500, border=True):
+            messages = st.container(height=400)
             if prompt := st.chat_input("How can I help you?"):
+                q = f"""
+                You are a toy train enthusiast who wants to help new customers.
+                You are responsible to analyze the reviews written for the product {product['Name']}.
+                Ensure the response is relevant and appropriate and find the answer to : {prompt} to help the new customer.
+                """
+                q_response = query_engine.query(q)
+                # print(textwrap.fill(str(q_response), 100))
                 messages.chat_message("user").write(prompt)
-                messages.chat_message("assistant").write(f"Echo: {prompt}")
-        with st.container(height=800, border=True):
+                messages.chat_message("assistant").write(str(q_response))
+        with st.container(border=True):
             st.html("<h4><b>Customer reviews</b></h4>")
             if "review" not in st.session_state:
                 if st.button("Write a review"):
                     write_review(product['Name'], product['ProductId'], vector_store)
             else:
                 f"Thank you for your review!"
-                # st.write(st.session_state.review)
-
+                st.session_state.review = {}
+            st.html("<h5>Customer ratings</h5>")
+            response_synthesizer = get_response_synthesizer(response_mode="tree_summarize")
+            retriever = vector_index.as_retriever()
+            summary_engine = RetrieverQueryEngine(
+                retriever=retriever,
+                response_synthesizer=response_synthesizer,
+            )
+            response = summary_engine.query("""
+                                Summarize the reviews with 5 point rating for Ease of assembly, Value for money, Good starter set, Functionality, Accessories included.
+                                Generate response in this format: 
+                                    Ease of assembly : (rating/5) | Value for money : (rating/5) | Starter set : (rating/5) | Functionality : (rating/5) | Accessories included : (rating/5)
+                            """)
+            st.write(response.response)
+            
     with col01:
         tab1, tab2, tab3, tab4 = st.tabs(["Train", "Assembled", "Parts", "Box"])
         with tab1:
