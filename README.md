@@ -1,11 +1,11 @@
 # train-store
+
 Online Train store with AI shopping assistant
 
-# Steps to setup up Local dev environment
-
-> [!Note] This was our submission for Stanford University **tech16-llm4biz-summer24** *Large Language Models for business with python* final project.
+> Project work for Stanford University **tech16-llm4biz-summer24** *Large Language Models for business with python* final project.
 
 ## Recommended hardware
+
 ||**Device**|**Recommended Config**|
 |-|-|-|
 |1.|Linux Host|Ubuntu 22.04|
@@ -14,8 +14,7 @@ Online Train store with AI shopping assistant
 |4.|Storage|128GB or more|
 |5.|GPU (optional)|12GB VRAM or more (eg. RTX3060)|
 
-
-## Running Gemma2:2b and Llama3.1:8b models using Ollama
+## Steps to install
 
 1. Verify docker service is running.
    ```bash
